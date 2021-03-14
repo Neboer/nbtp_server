@@ -1,9 +1,10 @@
 {
     "configurations": [
         {
-            "name": "Win32",
+            "name": "Linux",
             "includePath": [
-                "${default}"
+                "/usr/include",
+                "/lib/gcc/x86_64-linux-gnu/9/include"
             ],
             "defines": [
                 "_DEBUG",
@@ -14,7 +15,9 @@
             "compilerPath": "/usr/bin/g++",
             "cppStandard": "c++17",
             "intelliSenseMode": "linux-gcc-x64",
-            "compilerArgs": ["-pthread"]
+            "compilerArgs": [
+                "-pthread -pcurl"
+            ]
         }
     ],
     "version": 4
