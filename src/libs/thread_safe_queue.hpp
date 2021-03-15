@@ -2,7 +2,7 @@
 #include <mutex>
 #include <queue>
 
-
+// this is a very fast read-write block FIFO queue. When the queue is empty, the read process will block until a push into the queue, the same as write when the queue is full.
 using namespace std;
 template <typename T> class ThreadsafeQueue {
   queue<T> queue_;
@@ -38,12 +38,12 @@ public:
   }
 
   T pop() {
-    lock_guard<mutex> lock(atom_mutex);
     // 获得原子性保证之后，判断是否要打开写入锁。
     if (queue_.size() == max_size) {
       write_mutex.unlock();
     }
     read_mutex.lock();
+    lock_guard<mutex> lock(atom_mutex);
     T tmp = queue_.front();
     queue_.pop();
     if (!queue_.empty()) {
@@ -53,11 +53,11 @@ public:
   }
 
   void push(const T &item) {
-    lock_guard<mutex> lock(atom_mutex);
     if (queue_.empty()){
       read_mutex.unlock();
     }
     write_mutex.lock();
+    lock_guard<mutex> lock(atom_mutex);
     queue_.push(item);
     if (queue_.size() < max_size) {
       write_mutex.unlock(); // 如果没满，释放已加的锁。。
