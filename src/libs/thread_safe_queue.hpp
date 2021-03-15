@@ -1,3 +1,4 @@
+#include <deque>
 #include <mutex>
 #include <queue>
 
@@ -5,25 +6,23 @@
 using namespace std;
 template <typename T> class ThreadsafeQueue {
   queue<T> queue_;
-  mutable mutex atom_mutex; // 确保操作原子性的mutex.
+  mutex atom_mutex, // 确保操作原子性的mutex.
+    write_mutex, read_mutex;
   size_t max_size;
-  unique_lock<mutex>
-      write_full_lock; // 推入时先锁住，如果推完还没满就释放，如果推完满了就一直锁，推过来的数据将会阻塞，直到一个pop将锁打开。
-  unique_lock<mutex>
-      read_full_lock; // 弹出后发现已空，
-
   // Moved out of public interface to prevent races between this
   // and pop().
   bool empty() const { return queue_.empty(); }
 
 public:
   ThreadsafeQueue(size_t max_size) {
-    lock_guard<mutex> lock(atom_mutex);
+    const lock_guard<mutex> lock(atom_mutex);
+    write_mutex.unlock();
+    read_mutex.unlock();
     this->max_size = max_size;
   }
   ThreadsafeQueue() = delete;
   // ThreadsafeQueue(const ThreadsafeQueue<T> &) = delete;
-  // ThreadsafeQueue &operator=(const ThreadsafeQueue<T> &) = delete;
+  // Threadsafequeue &Operator=(Const Threadsafequeue<T> &) = Delete;
 
   // ThreadsafeQueue(ThreadsafeQueue<T> &&other)
   // {
@@ -33,7 +32,7 @@ public:
 
   virtual ~ThreadsafeQueue() {}
 
-  unsigned long size() const {
+  unsigned long size() {
     lock_guard<mutex> lock(atom_mutex);
     return queue_.size();
   }
@@ -41,21 +40,27 @@ public:
   T pop() {
     lock_guard<mutex> lock(atom_mutex);
     // 获得原子性保证之后，判断是否要打开写入锁。
-
-    if (queue_.empty()) {
-      return {};
+    if (queue_.size() == max_size) {
+      write_mutex.unlock();
     }
+    read_mutex.lock();
     T tmp = queue_.front();
     queue_.pop();
+    if (!queue_.empty()) {
+      read_mutex.unlock();
+    }
     return tmp;
   }
 
   void push(const T &item) {
     lock_guard<mutex> lock(atom_mutex);
-    write_full_lock.lock();
+    if (queue_.empty()){
+      read_mutex.unlock();
+    }
+    write_mutex.lock();
     queue_.push(item);
     if (queue_.size() < max_size) {
-      write_full_lock.unlock(); // 如果没满，释放已加的锁。。
+      write_mutex.unlock(); // 如果没满，释放已加的锁。。
     }
     // 如果满了，就一直锁着吧。
   }
