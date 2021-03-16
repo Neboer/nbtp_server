@@ -1,15 +1,25 @@
+#include <cstddef>
 #include <vector>
+#include <string>
+#include <memory>
 using namespace std;
-
-constexpr auto MSS = 100;
-constexpr auto STAT_COMPLETE = 0;
-constexpr auto STAT_PROGRESS = 1;
-constexpr auto STAT_FAILED = 2;
 
 typedef vector<unsigned char> nbtp_chunk;
 
-struct parallel_settings
-{
-    int read_count;
-    int transfer_count;
+typedef unsigned long nbtp_index;
+
+struct indexed_nbtp_chunk {
+  nbtp_chunk data;
+  nbtp_index index;
+};
+
+struct parallel_settings {
+  int read_count;
+  int transfer_count;
+};
+
+// when an upload is successful, upload process return this result.
+struct indexed_key {
+  nbtp_index index;
+  string url;
 };
