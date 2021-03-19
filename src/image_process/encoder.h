@@ -1,4 +1,5 @@
 // binary to png
 #include "../nbtp.h"
+#include <memory>
 
-nbtp_chunk* encode_to_png(nbtp_chunk* binary_data);
+unique_ptr<nbtp_chunk> encode_to_png(unique_ptr<nbtp_chunk> binary_data);

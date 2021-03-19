@@ -21,14 +21,6 @@ public:
     this->max_size = max_size;
   }
   ThreadsafeQueue() = delete;
-  // ThreadsafeQueue(const ThreadsafeQueue<T> &) = delete;
-  // Threadsafequeue &Operator=(Const Threadsafequeue<T> &) = Delete;
-
-  // ThreadsafeQueue(ThreadsafeQueue<T> &&other)
-  // {
-  //   lock_guard<mutex> lock(atom_mutex);
-  //   queue_ = move(other.queue_);
-  // }
 
   virtual ~ThreadsafeQueue() {}
 
@@ -38,7 +30,6 @@ public:
   }
 
   T pop() {
-    // 获得原子性保证之后，判断是否要打开写入锁。
     if (queue_.size() == max_size) {
       write_mutex.unlock();
     }
