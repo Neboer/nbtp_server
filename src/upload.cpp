@@ -57,7 +57,3 @@ void converter_manager(
   }
   waiting_upload_queue->push(indexed_nbtp_chunk());// 一旦到队列末尾，放入一个空的符号标记队列结束。
 }
-
-void upload() {
-  
-}

@@ -1,10 +1,10 @@
 #include "nbtp.h"
 #include <string>
 #include <functional>
-#include <fstream>
+#include <cstdio>
 using namespace std;
 // 一个基于文件制作生成器的工具。其实也可以基于socket来生成。
-function<nbtp_chunk *()> file_generator_maker(string &filename, size_t block_size)
+function<indexed_nbtp_chunk()> file_generator_maker(string &filename, size_t block_size)
 {
     // 先打开文件，然后准备读取。
     ifstream infile(filename, ifstream::binary|ifstream::in);
