@@ -28,8 +28,34 @@ size_t full_upload_task::server_response_collector(
 
 int full_upload_task::add_task(unique_ptr<nbtp_chunk> data_wait_for_upload) {
   CURL *curl_obj = convert_to_uploadable_object(move(data_wait_for_upload));
+  
+  curl_easy_setopt(curl_obj, CURLOPT_PRIVATE, )
   curl_multi_add_handle(multi_handle, curl_obj);
   int running_handles_count = 0;
   curl_multi_perform(multi_handle, &running_handles_count);
   return running_handles_count;
+}
+
+indexed_key_str full_upload_task::wait_for_an_result() {
+  indexed_key_str result;
+  CURLMsg *current_curl_message;
+  int numfds, msgs;
+  if (last_message) {
+    current_curl_message = last_message;
+  } else {
+    curl_multi_wait(multi_handle, nullptr, 0, 0, &numfds);
+    current_curl_message = curl_multi_info_read(multi_handle, &msgs);
+  }
+  CURL* current_handle = current_curl_message->easy_handle;
+  if(current_curl_message->data.result == CURLE_OK){
+    message current_message;
+    curl_easy_getinfo(current_handle, CURLINFO_PRIVATE, (void*)&current_message);
+    return move(current_message.result);
+  } else {
+    message current_message;
+    curl_easy_getinfo(current_handle, CURLINFO_PRIVATE, (void*)&current_message);
+    if (current_message.failed_count > ) {
+      
+	}
+  }
 }
